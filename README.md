@@ -20,12 +20,12 @@ https://mackenziechild.me/12-in-12/3/
 4. Image Uploading
 5. HAML
 
-# Create a new blog
+# Create a Recipe Box
 ```console
-$ rails new blog
+$ rails new recipe_box
 ```
 
-Chage directory to the blog. Under `blog/Gemfile`, add `gem 'therubyracer'`, save and run `bundle install`.      
+Chage directory to the recipe_box. Under `recipe_box/Gemfile`, add `gem 'therubyracer'`, save and run `bundle install`.      
 Note: Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter.
 ```console
 $ bundle install
