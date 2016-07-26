@@ -26,7 +26,10 @@ $ rails new recipe_box
 ```
 
 Chage directory to the recipe_box. Under `recipe_box/Gemfile`, add `gem 'therubyracer'`, save and run `bundle install`.      
-Note: Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter.
+
+Note: 
+Because there is no Javascript interpreter for Rails on Ubuntu Operation System, we have to install `Node.js` or `therubyracer` to get the Javascript interpreter.
+
 ```console
 $ bundle install
 ```
@@ -44,7 +47,10 @@ $ git commit -am 'Initial Commit'
 Instead of doing anything, I'll going to use HAML. To do this, we have to install it through the `gem`.
 
 	Note:
-	Haml (HTML Abstraction Markup Language) is a markup language that’s used to cleanly and simply describe the HTML of any web document, without the use of inline code. Once it’s installed, all view files with the ".html.haml" extension will be compiled using Haml. Haml supports Rails’ XSS protection scheme.
+	Haml (HTML Abstraction Markup Language) is a markup language 
+	that’s used to cleanly and simply describe the HTML of any web document, without the use of inline code. 
+	Once it’s installed, all view files with the ".html.haml" extension will be compiled using Haml. 
+	Haml supports Rails’ XSS protection scheme.
 
 Under `recipe_box/Gemfile`, add `gem 'haml', '~>4.0.5'`, save and run `bundle install`. Then restart the server.
 
@@ -78,6 +84,7 @@ Under `app/views/recipes`, we new a file named `index.html.haml`
 
 ### Create a new recipe
 Let's go ahead and create the ability to add our new recipes and show our recipes.
+
 Under `app/controllers/recipes_controller.rb`
 ```ruby
 class RecipesController < ApplicationController
@@ -94,7 +101,9 @@ class RecipesController < ApplicationController
 	end
 end
 ```
-I know each of the action we're gonna need to find the recipe, so I'm gonna to create a private method to hold that. And then I'm going to create a before action so that I can avoid the repeated code in each action.
+I know each of the action we're gonna need to find the recipe, so I'm gonna to create a private method to hold that. 
+And then I'm going to create a before action so that I can avoid the repeated code in each action.
+
 Under `app/controllers/recipes_controller.rb`
 ```ruby
 class RecipesController < ApplicationController
@@ -111,6 +120,7 @@ end
 ```
 
 Under our `new action` and `create action`, we're gonna want to do:
+
 Under `app/controllers/recipes_controller.rb`
 ```ruby
 class RecipesController < ApplicationController
@@ -139,7 +149,7 @@ class RecipesController < ApplicationController
 	private
 
 	def recipe_params
-		params.requre(:recipe).permit(:title, :description)
+		params.require(:recipe).permit(:title, :description)
 	end
 
 	def find_recipe
@@ -163,14 +173,17 @@ Before that, we need to add `simple_form` in our `Gemfile`
 gem 'simple_form'
 ```
 
-	Note: The `gem 'simple-form'` Mackenzie used in Rails4 will get error(undefined method 'number?') in Rails5,
-	So I change the `gem 'simple_form'` to :
+	Note:      
+	The " gem 'simple-form' " Mackenzie used in Rails4 will get error(undefined method 'number?') in Rails5,
+	So I change it to :
 
 	gem 'simple_form', github: 'kesha-antonov/simple_form', branch: 'rails-5-0'
 
 
 and run `bundle install`, then restart the server.
-So we're going to user `simple_form`
+
+So we're going to user `simple_form`      
+
 Under `app/views/recipes/_form.html.haml`
 ```haml
 = simple_form_for @recipe, html: { multipart: true } do |f|
@@ -201,7 +214,37 @@ Then in our `new.html.haml` file, we're gonna do
 = link_to "Back", root_path, class: "btn btn-default"
 ```
 
-Then refresh the browser and go into `http://localhost:3000/recipes/new`, you will see
-![image]()
+Then refresh the browser and go into `http://localhost:3000/recipes/new`, you will see     
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/new_recipe_form.jpeg)
+
+
+And we have to create a show page to show our recipe post.
+
+Under `app/views/recipes`, we new a file named `show.html.haml`   
+And list out the title and description
+
+```haml
+%h1= @recipe.title
+%p= @recipe.description
+
+=link_to "Back", root_path, class: "btn btn-default"
+```
+
+In our `app/controllers/recipes_controller.rb`, we want to list our all of our recipes.
+```ruby
+def index
+	@recipe = Recipe.all.order("created_at DESC")
+end
+```
+Now, inside of our `app/views/recipes/index.html.haml`, let's create a loop.
+So the loop list out each of our recipes.
+```haml
+- @recipe.each do |recipe|
+	%h2= link_to recipe.title, recipe
+```
+
+So we have the ability to create a post. And then we'll add the ability to add and destroy as well.
+
+
 
 To be continued...
