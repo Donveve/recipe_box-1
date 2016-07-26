@@ -328,6 +328,49 @@ And then, we gonna to import Bootstrap styles in `app/assets/stylesheets/applica
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/basic_styling.png)
 
 # Add some structure
+
+Before anything, we rename `app/views/layouts/application.html.erb` to `app/views/layouts/application.html.haml`.     
+And change html code to haml code:
+```haml
+!!! 5
+%html
+%head
+	%title RecipeBox
+	= csrf_meta_tags
+	= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+	= javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+%body
+	= yield
+```
+
 Let's add some structure to our applicaiton.
+
+### Navbar
+First, I'm going to add Navbar.     
+Under `app/views/layouts/application.html.haml`
+```haml
+!!! 5
+%html
+%head
+	%title RecipeBox
+	= csrf_meta_tags
+	= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+	= javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+%body
+	%nav.navbar.navbar-default
+		.container
+			.navbar-brand= link_to "Recipe Box", root_path
+
+			%ul.nav.navbar-nav.navbar-right
+				%li= link_to "New Recipe", new_recipe_path
+				%li= link_to "Sign Out", root_path
+
+	.container
+		- flash.each do |name, msg|
+			= content_tag :div, msg, class: "alert"
+
+		= yield
+```
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/navbar.png)
 
 To be continued...
