@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 
 gem 'therubyracer'
-
+gem 'haml', '~>4.0.5'
+gem 'simple_form', github: 'kesha-antonov/simple_form', branch: 'rails-5-0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.0'
