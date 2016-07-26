@@ -307,5 +307,27 @@ So we got the basic functionality of our Recipe.
 # Styling using bootstrap
 Let's add some bootstrap.
 
+We need to add bootstrap gem in our Gemfile, run `bundle install` and restart server.
+```
+gem 'bootstrap-sass', '~> 3.2.0.2'
+```
+
+	Note:
+	File to import not found or unreadable: 
+	bootstrap-sprockets Only for Twitter Bootstrap 3, bootstrap-sprockets is used.
+
+And if you go to the github page of the bootstrap-sass, it would give you some information on what you need to do.
+https://github.com/twbs/bootstrap-sass       
+
+First, we need to go into `app/assets/stylesheets` and rename `application.css` to `application.css.scss`.       
+And then, we gonna to import Bootstrap styles in `app/assets/stylesheets/application.css.scss`:
+
+	@import "bootstrap-sprockets";
+	@import "bootstrap";
+
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/basic_styling.png)
+
+# Add some structure
+Let's add some structure to our applicaiton.
 
 To be continued...
