@@ -182,7 +182,7 @@ gem 'simple_form'
 
 and run `bundle install`, then restart the server.
 
-So we're going to user `simple_form`      
+So we're going to use `simple_form`      
 
 Under `app/views/recipes/_form.html.haml`
 ```haml
@@ -245,6 +245,67 @@ So the loop list out each of our recipes.
 
 So we have the ability to create a post. And then we'll add the ability to add and destroy as well.
 
+### Ability to Destroy posts
+Under `app/controllers/recipes_controller.rb`
+```ruby
+class RecipesController < ApplicationController
+	before_action :find_recipe, only: [:show, :edit, :update, :destroy]
+
+	...
+	...
+
+	def edit
+	end
+
+	def update
+		if @recipe.update(recipe_params)
+			redirect_to @recipe
+		else
+			render 'edit'
+		end
+	end
+
+	def destroy
+		@recipe.destroy
+		redirect_to root_path, notice: "Successfully delted recipe"
+	end	
+
+	private
+
+	def recipe_params
+		params.require(:recipe).permit(:title, :description)
+	end
+
+	def find_recipe
+		@recipe = Recipe.find(params[:id])
+	end
+end
+```
+
+In `edit` we don't need to do anything, because in `before action` it find recipe for us.
+
+Then, let's create a `edit.html.haml` page under `app/views/recipes`     
+Under `app/views/recipes/edit.html.haml` 
+```haml
+%h1 Edit Recipe
+
+= render 'form'
+```
+Then back to our `show.html.haml`, let's add a edit link and a destroy link      
+In `app/views/recipes/show.html.haml`
+```haml
+%h1= @recipe.title
+%p= @recipe.description
+
+=link_to "Back", root_path, class: "btn btn-default"
+=link_to "Edit", edit_recipe_path, class: "btn btn-default"
+=link_to "Delete", recipe_path, method: :delete, data: {confirm: "Are you sure?"}, class: "btn btn-default"
+```
+So we got the basic functionality of our Recipe.
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/basic_functionality.jpeg)
+
+# Styling using bootstrap
+Let's add some bootstrap.
 
 
 To be continued...
