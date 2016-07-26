@@ -371,6 +371,6 @@ Under `app/views/layouts/application.html.haml`
 
 		= yield
 ```
-![image](https://github.com/TimingJL/recipe_box/blob/master/pic/navbar.png)
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/navbar.jpeg)
 
 To be continued...
