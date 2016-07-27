@@ -373,4 +373,83 @@ Under `app/views/layouts/application.html.haml`
 ```
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/navbar.jpeg)
 
+
+# Add images
+
+Let's go ahead and add images to the recipes.
+
+To do that, we're going to use `paperclip` gem.       
+https://github.com/thoughtbot/paperclip
+
+We need to add `paperclip` gem in our Gemfile, run `bundle install` and restart server.            
+In `Gemfile`, we add
+```
+gem 'paperclip', '~> 4.2.0'
+```
+
+In our recipe model `app/models/recipe.rb` (Ref: `Quick Start` of Github paperclip)
+```ruby
+class Recipe < ApplicationRecord
+	has_attached_file :image, styles: { medium: "400x400#" }
+	validates_attachment_content_type :image, content_type: /\Aimage\/.*\Z/
+end
+```
+
+Next, we need to add migration
+```console
+$ rails g paperclip recipe image
+$ rake db:migrate
+```
+
+Next, we need to add this to our form.       
+So in `app/views/recipes/_form.html.haml`
+```haml
+...
+...
+	.panel-body
+		= f.input :title, input_html: { class: 'form-control' }
+		= f.input :description, input_html: { class: 'form-control' }
+		= f.input :image, input_html: { class: 'form-control' }
+...
+...
+```
+
+And in our recipes controller `app/controllers/recipes_controller.rb`, we need to add that to our recipe params.
+```ruby
+...
+...
+def recipe_params
+	params.require(:recipe).permit(:title, :description, :image)
+end
+...
+...
+```
+
+In `app/views/recipes/show.html.haml`
+```haml
+= image_tag @recipe.image.url(:medium, class: "recipe_image")
+%h1= @recipe.title
+%p= @recipe.description
+
+=link_to "Back", root_path, class: "btn btn-default"
+=link_to "Edit", edit_recipe_path, class: "btn btn-default"
+=link_to "Delete", recipe_path, method: :delete, data: {confirm: "Are you sure?"}, class: "btn btn-default"
+```
+
+Then, restart the server and refresh the browser.
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/paperclip.jpeg)
+
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/image_post.jpeg)
+
+And then, we want to add that in our `app/views/recipes/index.html.haml` as well.
+For each recipe, we want the image tag, and this would be the link as well.
+```haml
+- @recipe.each do |recipe|
+	= link_to recipe do
+		= image_tag recipe.image.url(:medium)
+	%h2= link_to recipe.title, recipe
+```
+
+
+
 To be continued...
