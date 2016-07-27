@@ -230,6 +230,16 @@ And list out the title and description
 =link_to "Back", root_path, class: "btn btn-default"
 ```
 
+Note:
+`%p= @recipe.description` is unable to do text wraps, so I tweak the code to `%p= simple_format @recipe.description`.
+```haml
+%h1= @recipe.title
+%p= simple_format @recipe.description
+
+=link_to "Back", root_path, class: "btn btn-default"
+```
+
+
 In our `app/controllers/recipes_controller.rb`, we want to list our all of our recipes.
 ```ruby
 def index
@@ -295,7 +305,7 @@ Then back to our `show.html.haml`, let's add a edit link and a destroy link
 In `app/views/recipes/show.html.haml`
 ```haml
 %h1= @recipe.title
-%p= @recipe.description
+%p= simple_format @recipe.description
 
 =link_to "Back", root_path, class: "btn btn-default"
 =link_to "Edit", edit_recipe_path, class: "btn btn-default"
@@ -429,12 +439,14 @@ In `app/views/recipes/show.html.haml`
 ```haml
 = image_tag @recipe.image.url(:medium, class: "recipe_image")
 %h1= @recipe.title
-%p= @recipe.description
+%p= simple_format @recipe.description
 
 =link_to "Back", root_path, class: "btn btn-default"
 =link_to "Edit", edit_recipe_path, class: "btn btn-default"
 =link_to "Delete", recipe_path, method: :delete, data: {confirm: "Are you sure?"}, class: "btn btn-default"
 ```
+
+
 
 Then, restart the server and refresh the browser.
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/paperclip.jpeg)
@@ -449,6 +461,23 @@ For each recipe, we want the image tag, and this would be the link as well.
 		= image_tag recipe.image.url(:medium)
 	%h2= link_to recipe.title, recipe
 ```
+
+It works well, but it looks not very well. So let's add some structure to our index page.
+To do this with bootstrap, we need to use the `each slice` method.
+Under `app/views/recipes/index.html.haml`
+```haml
+- @recipe.each_slice(3) do |recipes|
+	.row
+		- recipes.each do |recipe|
+			.col-md-4
+				.recipe
+					.image_wrapper
+						= link_to recipe do
+							= image_tag recipe.image.url(:medium)
+					%h2= link_to recipe.title, recipe
+```
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/index_image_structure.jpeg)
+
 
 
 
