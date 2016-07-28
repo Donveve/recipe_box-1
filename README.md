@@ -736,8 +736,88 @@ Under `app/views/recipes/_ingredient_fields.html.haml`
 ```
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/add_ingredients.jpeg)
 
+Let's go ahead to add the form for directions    		
+Under `app/views/recipes/_form.html.haml`
+```haml
+= simple_form_for @recipe, html: { multipart: true } do |f|
+	- if @recipe.errors.any?
+		#errors
+			%p
+				= @recipe.errors.count
+				Prevented this recipe froms saving
+			%ul
+				- @recipe.errors.full_messages.each do |msg|
+					%li= msg
+	.panel-body
+		= f.input :title, input_html: { class: 'form-control' }
+		= f.input :description, input_html: { class: 'form-control' }
+		= f.input :image, input_html: { class: 'form-control' }
+
+		.row
+			.col-md-6
+				%h3 Ingredients
+				#ingredients
+					= f.simple_fields_for :ingredients do |ingredient|
+						= render 'ingredient_fields', f: ingredient
+					.links
+						= link_to_add_association 'Add Ingredient', f, :ingredients, class: "btn btn-default add-button"						
+
+			.col-md-6
+				%h3 Directions
+				#directions
+					= f.simple_fields_for :directions do |direction|
+						= render 'direction_fields', f: direction
+					.links
+						= link_to_add_association 'Add Step', f, :directions, class: "btn btn-default add-button"
+						
+	= f.button :submit, class: "btn btn-primary"
+```
+
+Then let's go ahead to create a file called `_direction_fields.html.haml`		
+Under `app/views/recipes/_direction_fields.html.haml`
+```haml
+.form-inline.clearfix
+	.nested-fields
+		= f.input :step, input_html: { class: 'form-input form-control' }
+		= link_to_remove_association "Remove Step", f, class: "btn btn-default form-button"
+```
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/add_directions.jpeg)
 
 
+In our show file, under `app/views/recipes/show.html.haml`
+
+```haml
+.main_content
+	#recipe_top.row
+		.col-md-4
+			= image_tag @recipe.image.url(:medium), class: "recipe_image"
+		.col-md-8
+			#recipe_info
+				%h1= @recipe.title
+				%p.description= @recipe.description
+
+	.row
+		.col-md-6
+			#ingredients
+				%h2 Ingredients
+				%ul
+					- @recipe.ingredients.each do |ingredient|
+						%li= ingredient.name
+
+		.col-md-6
+			#directions
+				%h2 Directions
+				%ul
+					- @recipe.directions.each do |direction|
+						%li= direction.step
+
+	.row
+		.col-md-12
+			= link_to "Back", root_path, class: "btn btn-default"
+			= link_to "Edit", edit_recipe_path, class: "btn btn-default"
+			= link_to "Delete", recipe_path, method: :delete, data: {confirm: "Are you sure?" }, class: "btn btn-default"
+```
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/ingredient_and_direction.jpeg)
 
 
 
