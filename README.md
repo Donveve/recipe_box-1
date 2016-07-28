@@ -13,6 +13,11 @@ This time, we're going to build a Recipe Box. We're able to add recipes and user
 
 https://mackenziechild.me/12-in-12/3/         
 
+
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/index.jpeg)
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/edit_page.jpeg)
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/show_page.jpeg)
+
 ### Highlights of this course
 1. Users
 2. Posts (Recipes)
@@ -1073,4 +1078,6 @@ Under `app/views/devise/registrations/new.html.erb`
 	</div>
 ```
 
-To be continued...
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/signup_page.jpeg)
+
+The RecipeBox we built is finished!
