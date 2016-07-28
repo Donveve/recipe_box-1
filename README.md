@@ -314,7 +314,7 @@ In `app/views/recipes/show.html.haml`
 So we got the basic functionality of our Recipe.
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/basic_functionality.jpeg)
 
-# Styling using bootstrap
+# Styling Using Bootstrap
 Let's add some bootstrap.
 
 We need to add bootstrap gem in our Gemfile, run `bundle install` and restart server.
@@ -819,6 +819,258 @@ In our show file, under `app/views/recipes/show.html.haml`
 ```
 ![image](https://github.com/TimingJL/recipe_box/blob/master/pic/ingredient_and_direction.jpeg)
 
+# Add Users and Authentication
+https://github.com/plataformatec/devise       
 
+We can add it to your Gemfile with:
+```
+	gem 'devise'
+```
+Run the bundle command to install it.
+
+Next, we need to run the generator:
+```console
+$ rails generate devise:install
+```
+
+	Some setup you must do manually if you haven't yet:
+
+	  1. Ensure you have defined default url options in your environments files. Here
+	     is an example of default_url_options appropriate for a development environment
+	     in config/environments/development.rb:
+
+	       config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+
+	     In production, :host should be set to the actual host of your application.
+
+	  2. Ensure you have defined root_url to *something* in your config/routes.rb.
+	     For example:
+
+	       root to: "home#index"
+
+	  3. Ensure you have flash messages in app/views/layouts/application.html.erb.
+	     For example:
+
+	       <p class="notice"><%= notice %></p>
+	       <p class="alert"><%= alert %></p>
+
+	  4. You can copy Devise views (for customization) to your app by running:
+
+	       rails g devise:views
+
+
+We'll need to set up the default URL options for the Devise mailer in each environment.       
+Here is a possible configuration for `config/environments/development.rb`:
+```ruby
+config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+```
+And then we copy Devise views by the command:
+```console
+$ rails g devise:views
+```
+
+Then we must run generate to create model for our users.
+```console
+$ rails g devise User
+```
+
+In our model `app/models/user.rb`
+```ruby
+class User < ApplicationRecord
+  # Include default devise modules. Others available are:
+  # :confirmable, :lockable, :timeoutable and :omniauthable
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :trackable, :validatable
+
+  has_many :recipes
+end
+```
+
+And then in our model `app/models/recipe.rb`
+```ruby
+class Recipe < ApplicationRecord
+	belongs_to :user
+
+	...
+	...
+end
+```
+
+And run migration 
+```console
+$ rake db:migrate
+```
+
+In `http://localhost:3000/users/sign_up`, we have the ability to sign_up now.
+
+Then we're going to rails console now
+```console
+$ rails c
+```
+Let's do 
+```console
+> @recipe = Recipe.last
+```
+We found that `user_id: nil`
+Let's fix that by opening our `recipes_controller.rb`
+We gonna to tweak the way we create the recipe.		
+Under `app/controllers/recipes_controller.rb`
+```ruby
+class RecipesController < ApplicationController
+...
+...
+	def new
+		@recipe = current_user.recipes.build
+	end
+
+	def create
+		@recipe = current_user.recipes.build(recipe_params)
+
+		if @recipe.save
+			redirect_to @recipe, notice: "Successfully created new recipe"
+		else
+			render 'new'
+		end
+	end
+...
+...
+```
+
+Then we create a new recipe, and do
+```console
+> @recipe = Recipe.last
+```
+
+We can see the user_id is '1'. That's means the new recipe is assigned to a current user.
+
+So now, in our show page `app/views/recipes/show.html.haml`, we can do 
+```haml
+.main_content
+	#recipe_top.row
+		.col-md-4
+			= image_tag @recipe.image.url(:medium), class: "recipe_image"
+		.col-md-8
+			#recipe_info
+				%h1= @recipe.title
+				%p.description= @recipe.description
+				%p
+					Submitted by
+					= @recipe.user.email
+	...
+	...
+	...
+```
+
+### Authentication
+In our `app/controllers/recipes_controllers.rb`, we want to make sure to authenticate.
+So let's add an `before_action`
+```ruby
+class RecipesController < ApplicationController
+	before_action :find_recipe, only: [:show, :edit, :update, :destroy]
+	before_action :authenticate_user!, except: [:index, :show]
+	...
+	...
+```
+
+So now, if we attenpt to new recipes without login, it would go to the login page.
+
+And then we tweak the sign_in, sign_out, and sign_up link.
+In `app/views/layouts/application.html.haml`
+```haml
+!!! 5
+%html
+%head
+	%title RecipeBox
+	= csrf_meta_tags
+	= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload'
+	= javascript_include_tag 'application', 'data-turbolinks-track': 'reload'
+%body
+	%nav.navbar.navbar-default
+		.container
+			.navbar-brand= link_to "Recipe Box", root_path
+
+			- if user_signed_in?
+				%ul.nav.navbar-nav.navbar-right
+					%li= link_to "New Recipe", new_recipe_path
+					%li= link_to "Sign Out", destroy_user_session_path, method: :delete
+			- else
+				%ul.nav.navbar-nav.navbar-right
+					%li= link_to "Sign Up", new_user_registration_path
+					%li= link_to "Sign In", new_user_session_path
+
+	.container
+		- flash.each do |name, msg|
+			= content_tag :div, msg, class: "alert"
+
+		= yield
+```
+
+And then we hope the edit and destroy button only show up when ther user sign-in.
+In `app/views/recipes/show.html.haml`
+```haml
+...
+...
+...
+	.row
+		.col-md-12
+			= link_to "Back", root_path, class: "btn btn-default"
+			- if user_signed_in?
+				= link_to "Edit", edit_recipe_path, class: "btn btn-default"
+				= link_to "Delete", recipe_path, method: :delete, data: {confirm: "Are you sure?" }, class: "btn btn-default"
+```
+
+### Styling the SignIn, SignOut, and SignUp Page.
+
+Under `app/views/devise/sessions/new.html.erb`
+```html
+
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			<h2>Sign in</h2>
+
+			<%= simple_form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+			  <div class="form-inputs">
+			    <%= f.input :email, required: false, autofocus: true, input_html: { class: 'form-control' } %>
+			    <%= f.input :password, required: false, input_html: { class: 'form-control' } %>
+			    <%= f.input :remember_me, as: :boolean, input_html: { class: 'form-control' } if devise_mapping.rememberable? %>
+			  </div>
+
+			  <div class="form-actions">
+			    <%= f.button :submit, "Sign in", class: 'btn btn-primary' %>
+			  </div>
+			  <br>
+			<% end %>
+
+			<%= render "devise/shared/links" %>
+		</div>
+	</div>
+```
+
+Under `app/views/devise/registrations/new.html.erb`
+```html
+
+	<div class="row">
+		<div class="col-md-6 col-md-offset-3">
+			<h2>Sign up</h2>
+
+			<%= simple_form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+			  <%= f.error_notification %>
+
+			  <div class="form-inputs">
+			    <%= f.input :email, required: true, autofocus: true, input_html: { class: 'form-control' } %>
+			    <%= f.input :password, required: true, input_html: { class: 'form-control' } %>
+			    <%= f.input :password_confirmation, required: true, input_html: { class: 'form-control' } %>
+			  </div>
+				<br>
+			  <div class="form-actions">
+			    <%= f.button :submit, "Sign up", class: "btn btn-primary" %>
+			  </div>
+			  <br>
+			<% end %>
+
+			<%= render "devise/shared/links" %>
+		</div>
+	</div>
+```
 
 To be continued...
