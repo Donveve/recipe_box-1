@@ -637,5 +637,108 @@ Refresh the browser, and then you will see
 
 # Add Ingredients and Directions
 So next, we need to add the ability to have `Ingredients` and `Directions` for each one of our recipes.
+The way we gonna to do is by using `gem 'cacoon'`. Cacoon make it easy to have the nested form.
+https://github.com/nathanvda/cocoon      
+
+In `Gemfile`
+```
+gem 'cocoon', '~> 1.2.6'
+```
+Run `bundle install` and restart the server.
+
+In `app/javascripts/application.js`, we add `//= require cocoon` under `//= require jquery_ujs`
+```js
+//= require jquery
+//= require jquery_ujs
+//= require cocoon
+//= require turbolinks
+//= require_tree .
+```
+
+First, we need to create a model for our ingredients, and then the model for the directions.
+```console
+$ rails g model Ingredient name:string recipe:belongs_to
+$ rails g model Direction step:text recipe:belongs_to
+$ rake db:migrate
+```
+And it created the Ingredient table and Direction table.
+
+Then under recipe model, `app/models/recipe.rb`
+```ruby
+class Recipe < ApplicationRecord
+	has_many :ingredients
+	has_many :directions
+
+
+	accepts_nested_attributes_for :ingredients,
+								reject_if: proc { |attributes| attributes['name'].blank? },
+								allow_destroy: true
+ 	accepts_nested_attributes_for :directions,
+								reject_if: proc { |attributes| attributes['step'].blank? },
+								allow_destroy: true
+
+	validates :title, :description, :image, presence: true
+
+	has_attached_file :image, styles: { medium: "400x400#" }
+	validates_attachment_content_type :image, content_type: /\Aimage\/.*\Z/
+end
+```
+
+And then we need to add attribute to our strong parameters insdie of our controller.        
+In `app/controllers/recipes_controller.rb`
+```ruby
+...
+...
+
+def recipe_params
+	params.require(:recipe).permit(:title, :description, :image, ingredients_attributes: [:id, :name, :_destroy], directions_attributes: [:id, :step, :_destroy])
+end
+
+...
+...
+```
+
+Under `app/views/recipes/_form.html.haml`
+```haml
+= simple_form_for @recipe, html: { multipart: true } do |f|
+	- if @recipe.errors.any?
+		#errors
+			%p
+				= @recipe.errors.count
+				Prevented this recipe froms saving
+			%ul
+				- @recipe.errors.full_messages.each do |msg|
+					%li= msg
+	.panel-body
+		= f.input :title, input_html: { class: 'form-control' }
+		= f.input :description, input_html: { class: 'form-control' }
+		= f.input :image, input_html: { class: 'form-control' }
+
+		.row
+			.col-md-6
+				%h3 Ingredients
+				#ingredients
+					= f.simple_fields_for :ingredients do |ingredient|
+						= render 'ingredient_fields', f: ingredient
+					.links
+						= link_to_add_association 'Add Ingredient', f, :ingredients, class: "btn btn-default add-button"		
+
+	= f.button :submit, class: "btn btn-primary"
+```
+
+Then, we need to create a partial that named `_ingredient_fields.html.haml`.      
+Under `app/views/recipes/_ingredient_fields.html.haml`
+```haml
+.form-inline.clearfix
+	.nested-fields
+		= f.input :name, input_html: { class: 'form-input form-control' }
+		= link_to_remove_association "Remove", f, class: "form-button btn btn-default"
+```
+![image](https://github.com/TimingJL/recipe_box/blob/master/pic/add_ingredients.jpeg)
+
+
+
+
+
 
 To be continued...
